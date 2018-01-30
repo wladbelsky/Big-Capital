@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Capital_Logic\currency.cs" />
+    <Compile Include="Capital_Logic\playerInterface.cs" />
     <Compile Include="Capital_Logic\stock_exchange.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
