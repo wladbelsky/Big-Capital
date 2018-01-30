@@ -10,7 +10,7 @@ namespace Big_Capital
     {
         static void Main(string[] args)
         {
-          
+            
         }
     }
 }
