@@ -119,7 +119,8 @@ namespace Big_Capital.Capital_Logic
                     case "1":
                         {
                             st.RandomOrders();
-                            st.ShowOrders(startCur[0],);
+                            st.ShowOrders(startCur[0], startCur[5]);
+                            break;
                         }
                     case "3":
                         {

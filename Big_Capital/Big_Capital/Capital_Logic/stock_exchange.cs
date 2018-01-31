@@ -43,7 +43,7 @@ namespace Big_Capital.Capital_Logic
                         Int32 rCount = rnd.Next(10);
                         Int32 startIndex = order_sell.Length;
                         Array.Resize(ref order_sell, order_sell.Length + rCount);
-                        for(int k = startIndex - 1; k < startIndex + rCount; k++)
+                        for(int k = startIndex; k < startIndex + rCount; k++)
                         {
                             Currency main = quotations[i];
                             Currency second = quotations[j];
@@ -61,7 +61,7 @@ namespace Big_Capital.Capital_Logic
                     Int32 rCount = rnd.Next(10);
                     Int32 startIndex = order_buy.Length;
                     Array.Resize(ref order_buy, order_buy.Length + rCount);
-                    for(int k = startIndex - 1; k < startIndex + rCount; k++)
+                    for(int k = startIndex; k < startIndex + rCount; k++)
                     {
                         Currency main = quotations[i];
                         Currency second = quotations[j];
@@ -95,6 +95,15 @@ namespace Big_Capital.Capital_Logic
     }
     class Order
     {
+        /*
+         * возможность покупки валюты по ордеру
+         * возможность продажи валюты по ордеру
+         * при покупке валюты по ордеру: если куплено меньшее количество, чем указано в ордере
+         * тогда вычесть из него количество купленой валюты
+         * кошельки для валют
+         * система рандомной покупки и продажи ордеров
+         * запоминание игрока, кошелька, последних котировок и ордеров
+         */
         Double count;
         Currency cur1;
         Currency cur2;
