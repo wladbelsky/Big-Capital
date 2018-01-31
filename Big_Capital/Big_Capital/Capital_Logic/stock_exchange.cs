@@ -8,10 +8,10 @@ namespace Big_Capital.Capital_Logic
 {
     class stock_exchange
     {
-        order[] order_sell;
-        order[] order_buy;
-        currency[] quotations;
-        public stock_exchange(currency[] c)
+        Order[] order_sell;
+        Order[] order_buy;
+        Currency[] quotations;
+        public stock_exchange(Currency[] c)
         {
             this.quotations = c;
         }
@@ -19,7 +19,7 @@ namespace Big_Capital.Capital_Logic
         {
             Console.Write("\n\tВалютные пары:\n\tНаименование:\t\t\tЦена:");
             for (int i = 0; i < quotations.Length; i++)
-                Console.Write(i + " " + quotations[i].GetName() + "\t\t\t" + quotations[i].Cost);
+                Console.Write(i + " " + quotations[i].GetCur());
         }
         public void Trade()
         {
@@ -30,15 +30,15 @@ namespace Big_Capital.Capital_Logic
             string[] tokens = Console.ReadLine().Split();
             Int32 one = Convert.ToInt32(tokens[0]);
             Int32 two = Convert.ToInt32(tokens[1]);
-            Console.Writeline();
+            Console.WriteLine();
         }
     }
-    class order
+    class Order
     {
         Double count;
         Currency cur1;
         Currency cur2;
-        public order(Double count, Currency cur1, Currency cur2)
+        public Order(Double count, Currency cur1, Currency cur2)
         {
             this.cur1 = cur1;
             this.count = count;

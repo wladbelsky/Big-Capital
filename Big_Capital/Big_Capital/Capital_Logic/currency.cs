@@ -33,6 +33,11 @@ namespace Big_Capital.Capital_Logic
             }
         }
 
+        public string GetCur()
+        {
+           return GetName() + "\t\t\t" + Cost;
+        }
+
         public String GetName()
         {
             return name;
