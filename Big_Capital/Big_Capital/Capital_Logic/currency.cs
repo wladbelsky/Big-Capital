@@ -20,6 +20,10 @@ namespace Big_Capital.Capital_Logic
             name = n;
             this.cost = cost;
         }
+        public Currency Clone() //clone, как конструктор копирования, вот только работает
+        {
+            return new Currency {name = this.name, cost = this.cost};
+        }
 
         public Double Cost
         {

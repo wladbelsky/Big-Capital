@@ -113,7 +113,7 @@ namespace Big_Capital.Capital_Logic
             while (cont)
             {
                 //Console.WriteLine("\nИмя игрока: " + name + "\nВ процессе... Любая кнопка чтобы вернутся в меню.");
-                Console.WriteLine("\n1)Показать котировки\n2)Купить/Продать\n3)Личный кабинет");
+                Console.WriteLine("\n1)Показать котировки\n2)Купить/Продать\n3)Личный кабинет\n0)Главное меню");
                 switch (Console.ReadKey().KeyChar.ToString())
                 {
                     case "1":
@@ -127,9 +127,13 @@ namespace Big_Capital.Capital_Logic
                             Console.WriteLine(GetCurOwned());
                             break;
                         }
-                    default:
+                    case "0":
                         {
                             cont = false;
+                            break;
+                        }
+                    default:
+                        {
                             break;
                         }
                 }

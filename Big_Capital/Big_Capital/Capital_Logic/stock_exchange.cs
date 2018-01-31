@@ -45,10 +45,10 @@ namespace Big_Capital.Capital_Logic
                         Array.Resize(ref order_sell, order_sell.Length + rCount);
                         for(int k = startIndex; k < startIndex + rCount; k++)
                         {
-                            Currency main = quotations[i];
-                            Currency second = quotations[j];
-                            main.Cost += (rnd.Next(21) - 10) / 100 * main.Cost;
-                            second.Cost += (rnd.Next(21) - 10) / 100 * second.Cost;
+                            Currency main = quotations[i].Clone();
+                            Currency second = quotations[j].Clone();
+                            main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
+                            second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
                             order_sell[k] = new Order(rnd.Next(100), main, second);
                         }
                     }
@@ -58,28 +58,31 @@ namespace Big_Capital.Capital_Logic
             {
                 for(int j = mainCurCount; j < quotations.Length; j++)
                 {
-                    Int32 rCount = rnd.Next(10);
-                    Int32 startIndex = order_buy.Length;
-                    Array.Resize(ref order_buy, order_buy.Length + rCount);
-                    for(int k = startIndex; k < startIndex + rCount; k++)
+                    if(i != j)
                     {
-                        Currency main = quotations[i];
-                        Currency second = quotations[j];
-                        main.Cost += (rnd.Next(21) - 10) / 100 * main.Cost;
-                        second.Cost += (rnd.Next(21) - 10) / 100 * second.Cost;
-                        order_buy[k] = new Order(rnd.Next(100), main, second);
+                        Int32 rCount = rnd.Next(1, 10);
+                        Int32 startIndex = order_buy.Length;
+                        Array.Resize(ref order_buy, order_buy.Length + rCount);
+                        for(int k = startIndex; k < startIndex + rCount; k++)
+                        {
+                            Currency main = quotations[i].Clone();
+                            Currency second = quotations[j].Clone();
+                            main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
+                            second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
+                            order_buy[k] = new Order(rnd.Next(100), main, second);
+                        }
                     }
                 }
             }
         }
         public void ShowOrders(Currency cur1, Currency cur2)
         {
-            Array.Sort(order_sell,
-            delegate(Order x, Order y) { return x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
-            Array.Sort(order_buy,
-            delegate(Order x, Order y) { return y.GetFirst().Cost.CompareTo(x.GetFirst().Cost); }); 
             Order[] sellPair = Array.FindAll(order_sell, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
             Order[] buyPair = Array.FindAll(order_buy, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
+            Array.Sort(sellPair,
+            delegate(Order x, Order y) { return x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
+            Array.Sort(buyPair,
+            delegate(Order x, Order y) { return y.GetFirst().Cost.CompareTo(x.GetFirst().Cost); }); 
 
             Console.WriteLine("Ордеры на продажу:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
             foreach(Order sell in sellPair)
@@ -109,9 +112,13 @@ namespace Big_Capital.Capital_Logic
         Currency cur2;
         public Order(Double count, Currency cur1, Currency cur2)
         {
-            this.cur1 = cur1;
             this.count = count;
+            this.cur1 = cur1;
             this.cur2 = cur2;
+        }
+        public Order Clone()
+        {
+            return new Order(count, cur1.Clone(), cur2.Clone());// {count = this.count, cur1 = this.cur1.Clone(), cur2 = this.cur2.Clone()};
         }
         public Currency GetFirst()
         {
