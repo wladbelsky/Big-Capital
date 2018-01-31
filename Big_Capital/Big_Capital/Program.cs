@@ -12,6 +12,7 @@ namespace Big_Capital
         static void Main(string[] args)
         {
             PlayerInterface playerInterface = new PlayerInterface();
+            playerInterface.addCurOwned(new CurOwned("name", 10, 100));
             playerInterface.ShowMenu();
             Console.WriteLine("Завершено!");
             Console.ReadKey();
