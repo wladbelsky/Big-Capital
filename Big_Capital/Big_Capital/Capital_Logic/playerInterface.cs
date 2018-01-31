@@ -10,7 +10,7 @@ namespace Big_Capital.Capital_Logic
     {
         String name;
         CurOwned[] wallet;
-        private readonly static Currency[] startCur = {new Currency("BTC", 1000), new Currency("USD", 1)};//стартовая валюта и её стоимость
+        readonly static Currency[] startCur = {new Currency("BTC", 1000), new Currency("USD", 1)};//стартовая валюта и её стоимость
         stock_exchange st = new stock_exchange(startCur);
         public PlayerInterface()
         {
@@ -27,15 +27,6 @@ namespace Big_Capital.Capital_Logic
         {
             this.name = name;
             wallet = own;
-        }
-        public PlayerInterface(String name, Currency[] cur)
-        {
-            this.name = name;
-            wallet = new CurOwned[cur.Length];
-            for(int i = 0; i < cur.Length; i++)
-            {
-                wallet[i] = new CurOwned(cur[i], 0);
-            }
         }
         public void ReadName()
         {
