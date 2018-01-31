@@ -80,13 +80,16 @@ namespace Big_Capital.Capital_Logic
             delegate(Order x, Order y) { return y.GetFirst().Cost.CompareTo(x.GetFirst().Cost); }); 
             Order[] sellPair = Array.FindAll(order_sell, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
             Order[] buyPair = Array.FindAll(order_buy, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
-            //cur1.Cost = Array.Find(quotations, x => x.GetName() == cur1.GetName()).Cost;    //Синхронизация с котировками
-            //cur2.Cost = Array.Find(quotations, x => x.GetName() == cur2.GetName()).Cost;
 
             Console.WriteLine("Ордеры на продажу:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
             foreach(Order sell in sellPair)
             {
-                Console.WriteLine(sell.GetFirst().Cost / sell.GetSecond().Cost + "\t" + );
+                Console.WriteLine(sell.GetFirst().Cost / sell.GetSecond().Cost + "\t" + sell.GetCount() + "\t" + sell.GetFirst().Cost / sell.GetSecond().Cost * sell.GetCount());
+            }
+            Console.WriteLine("Ордеры на покупку:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
+            foreach(Order buy in buyPair)
+            {
+                Console.WriteLine(buy.GetFirst().Cost / buy.GetSecond().Cost + "\t" + buy.GetCount() + "\t" + buy.GetFirst().Cost / buy.GetSecond().Cost * buy.GetCount());
             }
         }
     }
