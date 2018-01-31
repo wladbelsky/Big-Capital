@@ -8,14 +8,14 @@ namespace Big_Capital.Capital_Logic
 {
     class Currency
     {
-        protected string name;
+        protected String name;
         Double cost;
         public Currency()
         {
             name = "";
             cost = 0;
         }
-        public Currency(string n, Double cost = 0)
+        public Currency(String n, Double cost = 0)
         {
             name = n;
             this.cost = cost;
@@ -33,7 +33,7 @@ namespace Big_Capital.Capital_Logic
             }
         }
 
-        public string GetName()
+        public String GetName()
         {
             return name;
         }

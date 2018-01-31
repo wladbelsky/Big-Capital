@@ -8,25 +8,92 @@ namespace Big_Capital.Capital_Logic
 {
     class PlayerInterface
     {
-        string name;
+        String name;
         CurOwned[] wallet;
 
-        public PlayerInterface(string name)
-        {
-            this.name = name;
-        }
-        public PlayerInterface(string name, CurOwned[] own)
+        public PlayerInterface() => ReadName();
+        public PlayerInterface(String name) => this.name = name;
+        public PlayerInterface(String name, CurOwned[] own)
         {
             this.name = name;
             wallet = own;
         }
-        public PlayerInterface(string name, Currency[] cur)
+        public PlayerInterface(String name, Currency[] cur)
         {
             this.name = name;
             wallet = new CurOwned[cur.Length];
             for(int i = 0; i < cur.Length; i++)
             {
                 wallet[i] = new CurOwned(cur[i], 0);
+            }
+        }
+        public void ReadName()
+        {
+            Console.Write("Введите имя игрока: ");
+            name = Console.ReadLine();
+
+        }
+        public void ShowWallet()
+        {
+            for(int i = 0; i < wallet.Length; i++)
+            {
+                Console.WriteLine("");//Вывод доступной валюты
+                                      //Сделать универсальный метод
+            }
+        }
+
+        //player interact
+        public void ShowMenu()
+        {
+            Boolean cont = true;
+            while(cont)
+            {
+                Console.WriteLine("1)Начать игру\n2)Настройки\n3)Выход");
+
+                switch(Console.ReadKey().KeyChar.ToString())
+                {
+                    case "1":
+                        {
+                            //to do!
+                            ShowGame();
+                            break;
+                        }
+                    case "2":
+                        {
+                            //to do!
+                            Console.WriteLine("Settings?");
+                            break;
+                        }
+                    case "3":
+                        {
+                            Environment.Exit(0);
+                            break;
+                        }
+                    default:
+                        {
+                            cont = false;
+                            break;
+                        }
+                }
+                Console.WriteLine();
+            }
+        }
+
+        private void ShowGame()
+        {
+            Boolean cont = true;
+            while (cont)
+            {
+                Console.WriteLine("\nИмя игрока: " + name + "\nВ процессе... Любая кнопка чтобы вернутся в меню.");
+                //1)Показать котировки\n2)Купить/Продать\n3)Мой счет
+                switch (Console.ReadKey().KeyChar.ToString())
+                {
+                    default:
+                        {
+                            cont = false;
+                            break;
+                        }
+                }
             }
         }
     }
@@ -40,7 +107,7 @@ namespace Big_Capital.Capital_Logic
             name = cur.GetName();
             Cost = cur.Cost;
         }
-        public CurOwned(string n, Double own , Double cost = 0) : base(n, cost)
+        public CurOwned(String n, Double own , Double cost = 0) : base(n, cost)
         {
             count = own;
         }
