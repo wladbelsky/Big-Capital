@@ -10,7 +10,7 @@ namespace Big_Capital.Capital_Logic
     {
         String name;
         CurOwned[] wallet;
-        const Currency[] startCur = {new Currency("BTC", 1000), new Currency("USD", 1)};//стартовая валюта и её стоимость
+        private readonly static Currency[] startCur = {new Currency("BTC", 1000), new Currency("USD", 1)};//стартовая валюта и её стоимость
         stock_exchange st = new stock_exchange(startCur);
         public PlayerInterface()
         {

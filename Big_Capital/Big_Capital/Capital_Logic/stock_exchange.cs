@@ -23,14 +23,23 @@ namespace Big_Capital.Capital_Logic
         }
         public void Trade()
         {
-            Int32 cur1;
-            Int32 cur2;
             Show();
             Console.Write("\tДля начала торгов введите номер 1 валюты и номер 2 валюты через пробел");
             string[] tokens = Console.ReadLine().Split();
             Int32 one = Convert.ToInt32(tokens[0]);
             Int32 two = Convert.ToInt32(tokens[1]);
-            Console.WriteLine();
+            Console.WriteLine("\tВы выбрали валютную пару: " + quotations[one].GetName() + "/" + quotations[two], "\n\n\n");
+        }
+        public void ShowOrders(Currency cur1, Currency cur2)
+        {
+            Array.Sort(order_sell,
+            delegate(Order x, Order y) { return x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
+            Array.Sort(order_buy,
+            delegate(Order x, Order y) { return y.GetFirst().Cost.CompareTo(x.GetFirst().Cost); }); 
+            foreach(Order sell in order_sell)
+            {
+                Console.WriteLine();
+            }
         }
     }
     class Order
@@ -44,5 +53,13 @@ namespace Big_Capital.Capital_Logic
             this.count = count;
             this.cur2 = cur2;
         }
-    }
+        public Currency GetFirst()
+        {
+            return cur1;
+        }
+        public Currency GetSecond()
+        {
+            return cur2;
+        }
+    }     
 }
