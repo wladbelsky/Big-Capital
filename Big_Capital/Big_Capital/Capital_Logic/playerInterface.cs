@@ -10,7 +10,16 @@ namespace Big_Capital.Capital_Logic
     {
         String name;
         CurOwned[] wallet;
-        readonly static Currency[] startCur = {new Currency("BTC", 1000), new Currency("USD", 1)};//стартовая валюта и её стоимость
+        readonly static Currency[] startCur = {
+            new Currency("USD", 1),
+            new Currency("BTC", 10889.00000001),
+            new Currency("ETH", 1183.32000003),
+            new Currency("RUR", 0.01778),
+            new Currency("DASH", 743.89857603),
+            new Currency("LIZA", 0.67990000),
+            new Currency("BCC", 1609.63799991),
+            new Currency("DOGE", 0.00639700)
+        };//стартовая валюта и её стоимость
         stock_exchange st = new stock_exchange(startCur);
         public PlayerInterface()
         {
@@ -104,9 +113,14 @@ namespace Big_Capital.Capital_Logic
             while (cont)
             {
                 //Console.WriteLine("\nИмя игрока: " + name + "\nВ процессе... Любая кнопка чтобы вернутся в меню.");
-                Console.WriteLine("\n1)Показать котировки\n2)Купить/Продать\n3)Мой счет");
+                Console.WriteLine("\n1)Показать котировки\n2)Купить/Продать\n3)Личный кабинет");
                 switch (Console.ReadKey().KeyChar.ToString())
                 {
+                    case "1":
+                        {
+                            st.RandomOrders();
+                            st.ShowOrders(startCur[0],);
+                        }
                     case "3":
                         {
                             Console.WriteLine(GetCurOwned());

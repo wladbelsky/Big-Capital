@@ -8,9 +8,10 @@ namespace Big_Capital.Capital_Logic
 {
     class stock_exchange
     {
-        Order[] order_sell;
-        Order[] order_buy;
+        Order[] order_sell = new Order[0];
+        Order[] order_buy = new Order[0];
         Currency[] quotations;
+        readonly static Int32 mainCurCount = 4;
         public stock_exchange(Currency[] c)
         {
             this.quotations = c;
@@ -29,6 +30,47 @@ namespace Big_Capital.Capital_Logic
             Int32 one = Convert.ToInt32(tokens[0]);
             Int32 two = Convert.ToInt32(tokens[1]);
             Console.WriteLine("\tВы выбрали валютную пару: " + quotations[one].GetName() + "/" + quotations[two], "\n\n\n");
+        }
+        public void RandomOrders()
+        {
+            Random rnd = new Random();
+            for(int i = 0; i < mainCurCount; i++)
+            {
+                for(int j = 0; j < quotations.Length; j++)
+                {
+                    if(i != j)
+                    {
+                        Int32 rCount = rnd.Next(10);
+                        Int32 startIndex = order_sell.Length;
+                        Array.Resize(ref order_sell, order_sell.Length + rCount);
+                        for(int k = startIndex - 1; k < startIndex + rCount; k++)
+                        {
+                            Currency main = quotations[i];
+                            Currency second = quotations[j];
+                            main.Cost += (rnd.Next(21) - 10) / 100 * main.Cost;
+                            second.Cost += (rnd.Next(21) - 10) / 100 * second.Cost;
+                            order_sell[k] = new Order(rnd.Next(100), main, second);
+                        }
+                    }
+                }
+            }
+            for(int i = 0; i < mainCurCount; i++)
+            {
+                for(int j = mainCurCount; j < quotations.Length; j++)
+                {
+                    Int32 rCount = rnd.Next(10);
+                    Int32 startIndex = order_buy.Length;
+                    Array.Resize(ref order_buy, order_buy.Length + rCount);
+                    for(int k = startIndex - 1; k < startIndex + rCount; k++)
+                    {
+                        Currency main = quotations[i];
+                        Currency second = quotations[j];
+                        main.Cost += (rnd.Next(21) - 10) / 100 * main.Cost;
+                        second.Cost += (rnd.Next(21) - 10) / 100 * second.Cost;
+                        order_buy[k] = new Order(rnd.Next(100), main, second);
+                    }
+                }
+            }
         }
         public void ShowOrders(Currency cur1, Currency cur2)
         {
@@ -71,5 +113,5 @@ namespace Big_Capital.Capital_Logic
         {
             return count;
         }
-    }     
+    }
 }
