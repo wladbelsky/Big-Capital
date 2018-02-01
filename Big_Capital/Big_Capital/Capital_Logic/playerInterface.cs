@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics; // Debug
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,8 +9,8 @@ namespace Big_Capital.Capital_Logic
 {
     class PlayerInterface
     {
-        String name;
-        CurOwned[] wallet;
+        String nickName;    
+        List<CurOwned> wallet = new List<CurOwned>();
         readonly static Currency[] startCur = {
             new Currency("USD", 1),
             new Currency("BTC", 10889.00000001),
@@ -20,49 +21,36 @@ namespace Big_Capital.Capital_Logic
             new Currency("BCC", 1609.63799991),
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
-        stock_exchange st = new stock_exchange(startCur);
-        public PlayerInterface()
-        {
-            ReadName();
-            wallet = new CurOwned[0];
-        }
+        StockExchange st = new StockExchange(startCur);
+
+        public PlayerInterface() => ReadName();
         public PlayerInterface(String name, CurOwned own)
         {
-            wallet = new CurOwned[1];
-            wallet[0] = own;
-            this.name = name;
+            wallet.Add(own);
+            this.nickName = name;
         }
-        public PlayerInterface(String name, CurOwned[] own)
+        public PlayerInterface(String name, List<CurOwned> own)
         {
-            this.name = name;
+            this.nickName = name;
             wallet = own;
         }
         public void ReadName()
         {
             Console.Write("Введите имя игрока: ");
-            name = Console.ReadLine();
-
+            nickName = Console.ReadLine();
         }
 
         //wallet interact
-        public void ShowWallet()
+        public void AddCurOwned(CurOwned c)
         {
-            for(int i = 0; i < wallet.Length; i++)
-            {
-                Console.WriteLine(GetCurOwned());
-            }
-        }
-        public void addCurOwned(CurOwned c)
-        {
-            Array.Resize(ref wallet, wallet.Length + 1);
-            wallet[wallet.Length - 1] = c;
+            wallet.Add(c);
         }
         public String GetCurOwned()
         {
             String output = "";
-            for(int i = 0; i < wallet.Length; i++)
+            foreach(CurOwned cur in wallet)
             {
-                output += wallet[i].GetCur();
+                output += cur.GetCur();
                 output += "\n";
             }
             if(output == "")
@@ -73,38 +61,12 @@ namespace Big_Capital.Capital_Logic
         //player interact
         public void ShowMenu()
         {
-            Boolean cont = true;
-            while(cont)
+            Menu.ShowMenu(new Menu[]
             {
-                Console.WriteLine("1)Начать игру\n2)Настройки\n3)Выход");
-
-                switch(Console.ReadKey().KeyChar.ToString())
-                {
-                    case "1":
-                        {
-                            //to do!
-                            ShowGame();
-                            break;
-                        }
-                    case "2":
-                        {
-                            //to do!
-                            Console.WriteLine("Settings?");
-                            break;
-                        }
-                    case "3":
-                        {
-                            //Environment.Exit(0);
-                            cont = false;
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
-                }
-                Console.WriteLine();
-            }
+                new Menu("Начать игру", delegate(PlayerInterface player){ player.ShowGame(); }),
+                new Menu("Настройки", delegate(PlayerInterface player){ Console.WriteLine("Settings?"); }),
+                new Menu("Выход", delegate(PlayerInterface player){  })
+            }, this);
         }
 
         private void ShowGame()
@@ -118,8 +80,10 @@ namespace Big_Capital.Capital_Logic
                 {
                     case "1":
                         {
-                            st.RandomOrders();
+                            //st.ShowQuotations();
+                            st.AddRandomOrders();
                             st.ShowOrders(startCur[0], startCur[5]);
+                            st.RemoveRandomOrders();
                             break;
                         }
                     case "3":
@@ -139,6 +103,38 @@ namespace Big_Capital.Capital_Logic
                 }
             }
         }
+    }
+
+    class Menu
+    {
+        private String menuName;
+        private Delegate del;
+        public delegate void MenuDelegate(PlayerInterface sender);
+        public Menu(String menuName, MenuDelegate menuDelegate)
+        {
+            this.menuName = menuName;
+            del = menuDelegate;
+        }
+        public static void ShowMenu(Menu[] menu, PlayerInterface sender)
+        {
+            while (true)
+            {
+                for (int i = 0; i < menu.Length; i++)
+                {
+                    Console.WriteLine("\n" + (i + 1) + ")" + menu[i].menuName);
+                }
+                try
+                {
+                    menu[Convert.ToInt32(Console.ReadKey().KeyChar.ToString()) - 1].del.DynamicInvoke(sender);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                    break;
+                }
+            }
+        }
+        
     }
 
     class CurOwned : Currency   //Валюта пользователя

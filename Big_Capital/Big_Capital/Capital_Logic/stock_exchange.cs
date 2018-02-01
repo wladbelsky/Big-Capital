@@ -6,32 +6,33 @@ using System.Threading.Tasks;
 
 namespace Big_Capital.Capital_Logic
 {
-    class stock_exchange
+    class StockExchange
     {
-        Order[] order_sell = new Order[0];
-        Order[] order_buy = new Order[0];
+        List<Order> orderSell = new List<Order>();
+        List<Order> orderBuy = new List<Order>();
         Currency[] quotations;
         readonly static Int32 mainCurCount = 4;
-        public stock_exchange(Currency[] c)
+
+        public StockExchange(Currency[] c)
         {
             this.quotations = c;
         }
-        public void Show()
+        public void ShowQuotations()
         {
-            Console.Write("\n\tВалютные пары:\n\tНаименование:\t\t\tЦена:");
+            Console.WriteLine("Валютные пары:\nНаименование:\t\t\tЦена:");
             for (int i = 0; i < quotations.Length; i++)
-                Console.Write(i + " " + quotations[i].GetCur());
+                Console.WriteLine(i + " " + quotations[i].GetCur());
         }
         public void Trade()
         {
-            Show();
+            ShowQuotations();
             Console.Write("\tДля начала торгов введите номер 1 валюты и номер 2 валюты через пробел");
             string[] tokens = Console.ReadLine().Split();
             Int32 one = Convert.ToInt32(tokens[0]);
             Int32 two = Convert.ToInt32(tokens[1]);
             Console.WriteLine("\tВы выбрали валютную пару: " + quotations[one].GetName() + "/" + quotations[two], "\n\n\n");
         }
-        public void RandomOrders()
+        public void AddRandomOrders()
         {
             Random rnd = new Random();
             for(int i = 0; i < mainCurCount; i++)
@@ -41,53 +42,76 @@ namespace Big_Capital.Capital_Logic
                     if(i != j)
                     {
                         //sell orders generation
-                        Int32 rCount = rnd.Next(10);
-                        Int32 startIndex = order_sell.Length;
-                        Array.Resize(ref order_sell, order_sell.Length + rCount);
-                        for(int k = startIndex; k < startIndex + rCount; k++)
+                        Int32 rCount = rnd.Next(1, 10);
+
+                        for(int k = 0; k < rCount; k++)
                         {
                             Currency main = quotations[i].Clone();
                             Currency second = quotations[j].Clone();
                             main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
                             second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
-                            order_sell[k] = new Order(rnd.Next(100), main, second);
+                            orderSell.Add(new Order(rnd.Next(100), main, second));
                         }
 
                         //buy orders generation
                         rCount = rnd.Next(1, 10);
-                        startIndex = order_buy.Length;
-                        Array.Resize(ref order_buy, order_buy.Length + rCount);
-                        for(int k = startIndex; k < startIndex + rCount; k++)
+                        for (int k = 0; k < rCount; k++)
                         {
                             Currency main = quotations[i].Clone();
                             Currency second = quotations[j].Clone();
                             main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
                             second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
-                            order_buy[k] = new Order(rnd.Next(100), main, second);
+                            orderBuy.Add(new Order(rnd.Next(100), main, second));
                         }
                     }
                 }
             }
         }
+        public void RemoveRandomOrders()
+        {
+            Random rnd = new Random();
+            Int32 ordersToRemove = rnd.Next(orderSell.Count - 1);
+            for(int i = 0; i < ordersToRemove; i++)
+            {
+                orderSell.RemoveAt(rnd.Next(orderSell.Count - 1));
+            }
+            ordersToRemove = rnd.Next(orderBuy.Count - 1);
+            for (int i = 0; i < ordersToRemove; i++)
+            {
+                orderBuy.RemoveAt(rnd.Next(orderBuy.Count - 1));
+            }
+        }
         public void ShowOrders(Currency cur1, Currency cur2)
         {
-            Order[] sellPair = Array.FindAll(order_sell, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
-            Order[] buyPair = Array.FindAll(order_buy, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
+            List<Order> sellPair = orderSell.FindAll(
+                delegate(Order x) {
+                    if (x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName())
+                    { return true; }
+                    else return false;
+                });
+            List<Order> buyPair = orderBuy.FindAll(
+                delegate (Order x) {
+                    if (x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName())
+                    { return true; }
+                    else return false;
+                });
 
-            Array.Sort(sellPair,
-            delegate(Order x, Order y) { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); }); //x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
-            Array.Sort(buyPair,
-            delegate(Order x, Order y) { return (y.GetFirst().Cost / y.GetSecond().Cost).CompareTo(x.GetFirst().Cost / x.GetSecond().Cost); }); 
+            sellPair.Sort(
+                delegate (Order x, Order y) 
+                { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); });
+            sellPair.Sort(
+                delegate (Order x, Order y)
+                { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); });
 
-            Console.WriteLine("Ордеры на продажу:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
+            Console.WriteLine("Ордеры на продажу:\nЦена\t\t" + cur1.GetName() + "\t" + cur2.GetName());
             foreach(Order sell in sellPair)
             {
-                Console.WriteLine(sell.GetFirst().Cost / sell.GetSecond().Cost + "\t" + sell.GetCount() + "\t" + sell.GetFirst().Cost / sell.GetSecond().Cost * sell.GetCount());
+                Console.WriteLine(sell.GetOrder());
             }
-            Console.WriteLine("Ордеры на покупку:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
-            foreach(Order buy in buyPair)
+            Console.WriteLine("Ордеры на продажу:\nЦена\t\t" + cur1.GetName() + "\t" + cur2.GetName());
+            foreach (Order buy in buyPair)
             {
-                Console.WriteLine(buy.GetFirst().Cost / buy.GetSecond().Cost + "\t" + buy.GetCount() + "\t" + buy.GetFirst().Cost / buy.GetSecond().Cost * buy.GetCount());
+                Console.WriteLine(buy.GetOrder());
             }
         }
     }
@@ -111,9 +135,20 @@ namespace Big_Capital.Capital_Logic
             this.cur1 = cur1;
             this.cur2 = cur2;
         }
+        public Order(Order order)
+        {
+            this.count = order.count;
+            this.cur1 = cur1.Clone();
+            this.cur2 = cur2.Clone();
+        }
         public Order Clone()
         {
             return new Order(count, cur1.Clone(), cur2.Clone());// {count = this.count, cur1 = this.cur1.Clone(), cur2 = this.cur2.Clone()};
+        }
+
+        public String GetOrder()
+        {
+            return String.Format("{0:F6}\t{1}\t{2:F6}", GetFirst().Cost / GetSecond().Cost, GetCount(), GetFirst().Cost / GetSecond().Cost * GetCount());
         }
         public Currency GetFirst()
         {
