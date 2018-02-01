@@ -40,6 +40,7 @@ namespace Big_Capital.Capital_Logic
                 {
                     if(i != j)
                     {
+                        //sell orders generation
                         Int32 rCount = rnd.Next(10);
                         Int32 startIndex = order_sell.Length;
                         Array.Resize(ref order_sell, order_sell.Length + rCount);
@@ -51,17 +52,10 @@ namespace Big_Capital.Capital_Logic
                             second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
                             order_sell[k] = new Order(rnd.Next(100), main, second);
                         }
-                    }
-                }
-            }
-            for(int i = 0; i < mainCurCount; i++)
-            {
-                for(int j = mainCurCount; j < quotations.Length; j++)
-                {
-                    if(i != j)
-                    {
-                        Int32 rCount = rnd.Next(1, 10);
-                        Int32 startIndex = order_buy.Length;
+
+                        //buy orders generation
+                        rCount = rnd.Next(1, 10);
+                        startIndex = order_buy.Length;
                         Array.Resize(ref order_buy, order_buy.Length + rCount);
                         for(int k = startIndex; k < startIndex + rCount; k++)
                         {
@@ -79,10 +73,11 @@ namespace Big_Capital.Capital_Logic
         {
             Order[] sellPair = Array.FindAll(order_sell, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
             Order[] buyPair = Array.FindAll(order_buy, x => x.GetFirst().GetName() == cur1.GetName() && x.GetSecond().GetName() == cur2.GetName());
+
             Array.Sort(sellPair,
-            delegate(Order x, Order y) { return x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
+            delegate(Order x, Order y) { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); }); //x.GetFirst().Cost.CompareTo(y.GetFirst().Cost); }); 
             Array.Sort(buyPair,
-            delegate(Order x, Order y) { return y.GetFirst().Cost.CompareTo(x.GetFirst().Cost); }); 
+            delegate(Order x, Order y) { return (y.GetFirst().Cost / y.GetSecond().Cost).CompareTo(x.GetFirst().Cost / x.GetSecond().Cost); }); 
 
             Console.WriteLine("Ордеры на продажу:\nЦена\t" + cur1.GetName() + "\t" + cur2.GetName());
             foreach(Order sell in sellPair)
