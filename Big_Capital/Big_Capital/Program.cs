@@ -13,7 +13,7 @@ namespace Big_Capital
         static void Main(string[] args)
         {
             PlayerInterface playerInterface = new PlayerInterface();
-            playerInterface.AddCurOwned(new CurOwned("name", 10, 100));
+            playerInterface.AddCurOwned(new CurOwned(playerInterface.GetStockExchange().GetQuotations()[0], 100));
             playerInterface.ShowMenu();
             System.Diagnostics.Debug.WriteLine("Завершено!");  //debug console
         }

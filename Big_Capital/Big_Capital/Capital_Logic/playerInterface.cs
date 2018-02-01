@@ -56,10 +56,10 @@ namespace Big_Capital.Capital_Logic
         }
         public String GetCurOwned()
         {
-            String output = "";
+            String output = "\n";
             foreach(CurOwned cur in wallet)
             {
-                cur.Cost = st.GetQuotations().ToList().Find(x => x.GetName() == cur.GetName()).Cost;//Синхронизация цены с StockExchange
+                cur.Cost = st.GetQuotations().ToList().Find(x => x.GetName() == cur.GetName()).Cost;//Синхронизация цены со StockExchange
                 output += cur.GetCur();
                 output += "\n";
             }
@@ -77,7 +77,7 @@ namespace Big_Capital.Capital_Logic
         {
             Menu.ShowMenu(new Menu[]
             {
-                new Menu("Начать игру", delegate(PlayerInterface sender){ sender.ShowGame(); }),
+                new Menu("Начать игру", delegate(PlayerInterface sender){ ShowGame(); }),
                 new Menu("Настройки", delegate(PlayerInterface sender){ Console.WriteLine("Settings?"); }),
                 new Menu("Выход", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
@@ -89,14 +89,21 @@ namespace Big_Capital.Capital_Logic
             {
                 new Menu("Показать котировки", 
                 delegate(PlayerInterface sender){
-                            sender.st.ShowQuotations();
+                    sender.st.ShowQuotations();
                 }),
                 new Menu("Купить/Продать", delegate(PlayerInterface sender){
-                            sender.st.AddRandomOrders();
-                            sender.st.ShowOrders(startCur[0], startCur[5]);
-                            sender.st.RemoveRandomOrders(this);
+                    st.AddRandomOrders();
+                    //st.ShowOrders(startCur[0], startCur[5]);
+                    st.RemoveRandomOrders(this);
+                    st.Trade(this);
                 }),
-                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine(GetCurOwned()); }),
+                new Menu("Обновить ордеры 0 7 (Debug)",
+                delegate(PlayerInterface sender){
+                    st.AddRandomOrders();
+                    st.ShowOrders(startCur[0], startCur[7]);
+                    st.RemoveRandomOrders(this);
+                }),
+                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine("Наименование:\t\tЦена:\tКоличество\n" + GetCurOwned()); }),
                 new Menu("Главное меню", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
         }

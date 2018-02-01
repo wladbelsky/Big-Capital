@@ -62,6 +62,7 @@ namespace Big_Capital.Capital_Logic
         {
             name = cur.GetName();
             Cost = cur.Cost;
+            count = own;
         }
         public CurOwned(String n, Double own, Double cost = 0) : base(n, cost)
         {
