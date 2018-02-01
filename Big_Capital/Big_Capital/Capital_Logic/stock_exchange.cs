@@ -99,7 +99,7 @@ namespace Big_Capital.Capital_Logic
             sellPair.Sort(
                 delegate (Order x, Order y) 
                 { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); });
-            sellPair.Sort(
+            buyPair.Sort(
                 delegate (Order x, Order y)
                 { return (x.GetFirst().Cost / x.GetSecond().Cost).CompareTo(y.GetFirst().Cost / y.GetSecond().Cost); });
 
@@ -108,7 +108,7 @@ namespace Big_Capital.Capital_Logic
             {
                 Console.WriteLine(sell.GetOrder());
             }
-            Console.WriteLine("Ордеры на продажу:\nЦена\t\t" + cur1.GetName() + "\t" + cur2.GetName());
+            Console.WriteLine("Ордеры на покупку:\nЦена\t\t" + cur1.GetName() + "\t" + cur2.GetName());
             foreach (Order buy in buyPair)
             {
                 Console.WriteLine(buy.GetOrder());

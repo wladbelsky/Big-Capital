@@ -22,6 +22,7 @@ namespace Big_Capital.Capital_Logic
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
         StockExchange st = new StockExchange(startCur);
+        Boolean menuExit = false;
 
         public PlayerInterface() => ReadName();
         public PlayerInterface(String name, CurOwned own)
@@ -38,6 +39,11 @@ namespace Big_Capital.Capital_Logic
         {
             Console.Write("Введите имя игрока: ");
             nickName = Console.ReadLine();
+        }
+        public Boolean MenuExit
+        {
+            get;
+            set;
         }
 
         //wallet interact
@@ -63,45 +69,26 @@ namespace Big_Capital.Capital_Logic
         {
             Menu.ShowMenu(new Menu[]
             {
-                new Menu("Начать игру", delegate(PlayerInterface player){ player.ShowGame(); }),
-                new Menu("Настройки", delegate(PlayerInterface player){ Console.WriteLine("Settings?"); }),
-                new Menu("Выход", delegate(PlayerInterface player){  })
+                new Menu("Начать игру", delegate(PlayerInterface sender){ sender.ShowGame(); }),
+                new Menu("Настройки", delegate(PlayerInterface sender){ Console.WriteLine("Settings?"); }),
+                new Menu("Выход", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
         }
 
         private void ShowGame()
         {
-            Boolean cont = true;
-            while (cont)
+            Menu.ShowMenu(new Menu[]
             {
-                //Console.WriteLine("\nИмя игрока: " + name + "\nВ процессе... Любая кнопка чтобы вернутся в меню.");
-                Console.WriteLine("\n1)Показать котировки\n2)Купить/Продать\n3)Личный кабинет\n0)Главное меню");
-                switch (Console.ReadKey().KeyChar.ToString())
-                {
-                    case "1":
-                        {
-                            //st.ShowQuotations();
-                            st.AddRandomOrders();
-                            st.ShowOrders(startCur[0], startCur[5]);
-                            st.RemoveRandomOrders();
-                            break;
-                        }
-                    case "3":
-                        {
-                            Console.WriteLine(GetCurOwned());
-                            break;
-                        }
-                    case "0":
-                        {
-                            cont = false;
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
-                }
-            }
+                new Menu("Показать котировки", 
+                delegate(PlayerInterface sender){
+                            sender.st.AddRandomOrders();
+                            sender.st.ShowOrders(startCur[0], startCur[5]);
+                            sender.st.RemoveRandomOrders();
+                }),
+                new Menu("Купить/Продать", delegate(PlayerInterface sender){ Console.WriteLine("Не сделано(((("); }),
+                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine(GetCurOwned()); }),
+                new Menu("Главное меню", delegate(PlayerInterface sender){ sender.MenuExit = true; })
+            }, this);
         }
     }
 
@@ -117,7 +104,7 @@ namespace Big_Capital.Capital_Logic
         }
         public static void ShowMenu(Menu[] menu, PlayerInterface sender)
         {
-            while (true)
+            while (!sender.MenuExit)
             {
                 for (int i = 0; i < menu.Length; i++)
                 {
@@ -133,6 +120,7 @@ namespace Big_Capital.Capital_Logic
                     break;
                 }
             }
+            sender.MenuExit = false;
         }
         
     }
