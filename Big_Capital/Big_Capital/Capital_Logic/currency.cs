@@ -53,4 +53,34 @@ namespace Big_Capital.Capital_Logic
         }
 
     }
+
+    class CurOwned : Currency   //Валюта пользователя
+    {
+        Double count;
+
+        public CurOwned(Currency cur, Double own)
+        {
+            name = cur.GetName();
+            Cost = cur.Cost;
+        }
+        public CurOwned(String n, Double own, Double cost = 0) : base(n, cost)
+        {
+            count = own;
+        }
+        public override string GetCur()
+        {
+            return base.GetCur() + "\t" + Owned;
+        }
+        public Double Owned
+        {
+            get { return count; }
+            set
+            {
+                if (value > 0)
+                    count = value;
+                else
+                    count = 0;
+            }
+        }
+    }
 }
