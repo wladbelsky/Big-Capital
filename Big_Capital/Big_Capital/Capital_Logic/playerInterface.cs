@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Big_Capital.Capital_Logic
@@ -21,7 +22,18 @@ namespace Big_Capital.Capital_Logic
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
         StockExchange st = new StockExchange(startCur);
+        Timer timer = new Timer(RandomTimerCallBack, new AutoResetEvent(false), 0, 60 * 1000);
 
+        //Timer callback, перенести позже!
+        private static void RandomTimerCallBack(Object stateInfo)
+        {
+            //PlayerInterface pi = stateInfo as PlayerInterface;
+            //pi.st.AddRandomOrders();
+            //pi.st.RemoveRandomOrders(pi);
+            System.Diagnostics.Debug.WriteLine("Таймер отработал");
+        }
+
+        //Конструкторы
         public PlayerInterface() => ReadName();
         public PlayerInterface(String name, CurOwned own)
         {
@@ -30,7 +42,7 @@ namespace Big_Capital.Capital_Logic
         }
         public PlayerInterface(String name, List<CurOwned> own)
         {
-            this.nickName = name;
+            nickName = name;
             wallet = own;
         }
         public void ReadName()
@@ -44,7 +56,7 @@ namespace Big_Capital.Capital_Logic
             set;
         }
 
-        //wallet interact
+        //Взаимодействие с кошельком
         public void AddCurOwned(CurOwned c)
         {
             if(wallet.Exists(x => x.GetName() == c.GetName()))
@@ -67,7 +79,21 @@ namespace Big_Capital.Capital_Logic
                 output = "Пусто";
             return output;
         }
-        public StockExchange GetStockExchange()
+        public void RemoveCurOwned(CurOwned c)
+        {
+            if (wallet.Exists(x => x.GetName() == c.GetName()))
+            {
+                if (wallet.Find(x => x.GetName().Equals(c.GetName())).Owned > c.Owned)
+                    wallet.Find(x => x.GetName().Equals(c.GetName())).Owned -= c.Owned;
+                else
+                    wallet.Remove(wallet.Find(x => x.GetName().Equals(c.GetName())));
+            }
+        }
+        public Boolean IsCurOwned(CurOwned cur)
+        {
+            return wallet.Exists(x => x.GetName() == cur.GetName() && x.Owned >= cur.Owned);
+        }
+        public StockExchange GetStockExchange()     //получение экземпляра StockExchange
         {
             return st;
         }
@@ -77,7 +103,7 @@ namespace Big_Capital.Capital_Logic
         {
             Menu.ShowMenu(new Menu[]
             {
-                new Menu("Начать игру", delegate(PlayerInterface sender){ ShowGame(); }),
+                new Menu("Начать игру", delegate(PlayerInterface sender){ Console.Clear(); ShowGame(); }),
                 new Menu("Настройки", delegate(PlayerInterface sender){ Console.WriteLine("Settings?"); }),
                 new Menu("Выход", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
@@ -89,22 +115,30 @@ namespace Big_Capital.Capital_Logic
             {
                 new Menu("Показать котировки", 
                 delegate(PlayerInterface sender){
+                    Console.Clear();
                     sender.st.ShowQuotations();
                 }),
                 new Menu("Купить/Продать", delegate(PlayerInterface sender){
-                    st.AddRandomOrders();
+                    Console.Clear();
+                    st.AddRandomOrders();//убрать рандом
                     //st.ShowOrders(startCur[0], startCur[5]);
                     st.RemoveRandomOrders(this);
                     st.Trade(this);
                 }),
-                new Menu("Обновить ордеры 0 7 (Debug)",
+                new Menu("Обновить ордеры (Debug)",
                 delegate(PlayerInterface sender){
                     st.AddRandomOrders();
-                    st.ShowOrders(startCur[0], startCur[7]);
                     st.RemoveRandomOrders(this);
+                    Console.WriteLine("Ордеры обновленны!");
                 }),
-                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine("Наименование:\t\tЦена:\tКоличество\n" + GetCurOwned()); }),
-                new Menu("Главное меню", delegate(PlayerInterface sender){ sender.MenuExit = true; })
+                new Menu("Личный кабинет", 
+                delegate(PlayerInterface sender){
+                    Console.Clear();
+                    Console.WriteLine("Наименование:\t\tЦена:\tКоличество\n" + GetCurOwned());
+                    Console.WriteLine("Ваши ордеры: ");
+                    Console.WriteLine(st.ShowPlayerOrders());
+                }),
+                new Menu("Главное меню", delegate(PlayerInterface sender){ Console.Clear(); sender.MenuExit = true; })
             }, this);
         }
     }

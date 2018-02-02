@@ -17,6 +17,8 @@ namespace Big_Capital.Capital_Logic
         {
             this.quotations = c;
         }
+
+        //Котировки
         public void ShowQuotations()
         {
             Console.WriteLine("Котировки:\nНаименование:\t\t\tЦена:");
@@ -36,9 +38,11 @@ namespace Big_Capital.Capital_Logic
         {
             return quotations;
         }
+
+        //Торги
         public void Trade(PlayerInterface sender)
         {
-            Console.Write("\tДля начала торгов введите номер 1 валюты и номер 2 валюты через пробел");
+            Console.WriteLine("Для начала торгов введите номер 1 валюты и номер 2 валюты через пробел");//покупаем первую за вторую)
             ShowQuotations();
             string[] tokens = Console.ReadLine().Split();
             Int32 one = Convert.ToInt32(tokens[0]);
@@ -51,40 +55,61 @@ namespace Big_Capital.Capital_Logic
                 delegate(PlayerInterface send){
                     Console.Write("Выберите желаемое количество для покупки: ");
                     Double count = Convert.ToDouble(Console.ReadLine());
-                    AddBuyOrder(new Order(count, quotations[one], quotations[two], true), send);
-                    Console.WriteLine("Ордер успешно выставлен на продажу!");
+                    Order order = new Order(count, quotations[one], quotations[two], true);
+                    if(send.IsCurOwned(new CurOwned(quotations[two], count * quotations[one].Cost / quotations[two].Cost)))
+                    {
+                        AddBuyOrder(order, send);
+                        Console.WriteLine("Ордер успешно выставлен на покупку!");
+                    }
+                    else
+                        Console.WriteLine("Недостаточно средств!");
+                    
                     send.MenuExit = true;
+                }),
+                new Menu("Продать", 
+                delegate(PlayerInterface send){
+                    Console.WriteLine("Введите количество для продажи: ");
+                    Double count = Convert.ToDouble(Console.ReadLine());
+                    Order order = new Order(count, quotations[two], quotations[one], true);
+                    if(send.IsCurOwned(new CurOwned(quotations[two], count * quotations[one].Cost / quotations[two].Cost)))
+                    {
+                        AddSellOrder(order, send);//первую за вторую!!! xD
+                        Console.WriteLine("Ордер успешно выставлен на продажу!");
+                    }
+                    else
+                        Console.WriteLine("Недостаточно средств!");
                 }),
                 new Menu("Назад", delegate(PlayerInterface send){ send.MenuExit = true; })
             }, sender);
-            //Console.Write("Выберите желаемое количество для покупки: ");
-            //Double count = Convert.ToDouble(Console.ReadLine());
 
         }
         public void AddBuyOrder(Order order, PlayerInterface sender)//добавить проверку на наличие валюты у игрока!!!
         {
             List<Order> pair = GetPair(orderSell, order.GetFirst(), order.GetSecond());
-            Order buyOrder = pair.Find(x => x.GetCount() <= order.GetCount());
+            Order buyOrder = pair.Find(x => x.GetCount() >= order.GetCount());
             if (buyOrder != null)
             {
                 if (buyOrder.GetCount() == order.GetCount())
                 {
                     orderSell.Remove(buyOrder);
-                    sender.AddCurOwned(new CurOwned(buyOrder.GetSecond(), order.GetCount()));
                 }
                 else
                 {
-                    orderBuy[orderBuy.IndexOf(buyOrder)].SetCount(orderBuy[orderBuy.IndexOf(buyOrder)].GetCount() - buyOrder.GetCount());
-                    sender.AddCurOwned(new CurOwned(buyOrder.GetSecond(), order.GetCount()));
+                    orderSell[orderSell.IndexOf(buyOrder)].SetCount(orderSell[orderSell.IndexOf(buyOrder)].GetCount() - buyOrder.GetCount());
                 }
+                sender.AddCurOwned(new CurOwned(buyOrder.GetFirst(), order.GetCount()));
+                sender.RemoveCurOwned(new CurOwned(buyOrder.GetSecond(), order.GetFirst().Cost / order.GetSecond().Cost * order.GetCount()));
             }
             else
                 orderBuy.Add(order);
         }
-        public void AddSellOrder(Order order)
+        public void AddSellOrder(Order order, PlayerInterface sender)
         {
             orderSell.Add(order);
+            sender.RemoveCurOwned(new CurOwned(order.GetSecond(), order.GetCount()));
         }
+
+        //Случайные торги
         public void AddRandomOrders()
         {
             Random rnd = new Random();
@@ -104,6 +129,7 @@ namespace Big_Capital.Capital_Logic
                             main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
                             second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
                             orderSell.Add(new Order(rnd.Next(1, 100), main, second));
+                            orderSell.Add(new Order(rnd.Next(1, 100), second, main));
                         }
 
                         //buy orders generation
@@ -115,6 +141,7 @@ namespace Big_Capital.Capital_Logic
                             main.Cost += rnd.Next(-10, 10) / 100.0 * main.Cost;
                             second.Cost += rnd.Next(-10, 10) / 100.0 * second.Cost;
                             orderBuy.Add(new Order(rnd.Next(1, 100), main, second));
+                            orderBuy.Add(new Order(rnd.Next(1, 100), second, main));
                         }
                     }
                 }
@@ -125,7 +152,7 @@ namespace Big_Capital.Capital_Logic
             Random rnd = new Random();
             List<Order> newOrderSell = new List<Order>();
             List<Order> newOrderBuy = new List<Order>();
-            for (int i = 0; i < mainCurCount; i++)
+            for (int i = 0; i < quotations.Length; i++)//mainCurCount
             {
                 for (int j = 0; j < quotations.Length; j++)
                 {
@@ -135,18 +162,19 @@ namespace Big_Capital.Capital_Logic
                         List<Order> sellPair = StockExchange.GetPair(orderSell, quotations[i], quotations[j]);
                         if (buyPair.Count > 1 && sellPair.Count > 1)
                         {
-                            Int32 soldOrdersCount = rnd.Next(1, sellPair.Count - 1);
+                            Int32 soldOrdersCount = rnd.Next(1, sellPair.Count);
                             List<Order> soldPlayerOrders = sellPair.FindAll(x => x.IsPlayer == true);
                             if(soldPlayerOrders.Count > 0)
                             {
                                 for(int k = 0; k < soldPlayerOrders.Count; k++)
                                 {
-                                    sender.AddCurOwned(new CurOwned(soldPlayerOrders[k].GetSecond(), soldPlayerOrders[k].GetCount()));
+                                    Console.WriteLine("Ваш ордер куплен {0}/{1}", soldPlayerOrders[k].GetFirst().GetName(), soldPlayerOrders[k].GetSecond().GetName());
+                                    sender.AddCurOwned(new CurOwned(soldPlayerOrders[k].GetFirst(), soldPlayerOrders[k].GetCount()));
                                 }
                             }
                             sellPair.RemoveRange(0, soldOrdersCount);
 
-                            Int32 boughtOrdersCount = rnd.Next(1, buyPair.Count - 1);
+                            Int32 boughtOrdersCount = rnd.Next(1, buyPair.Count);
                             List<Order> boughtPlayerOrders = buyPair.FindAll(x => x.IsPlayer == true);
                             if (rnd.Next(0, 100) <= 60)    //рост/падение
                             {
@@ -156,6 +184,7 @@ namespace Big_Capital.Capital_Logic
                             {
                                 for (int k = 0; k < boughtPlayerOrders.Count; k++)
                                 {
+                                    Console.WriteLine("Ваш ордер продан {0}/{1}", boughtPlayerOrders[k].GetFirst().GetName(), boughtPlayerOrders[k].GetSecond().GetName());
                                     sender.AddCurOwned(new CurOwned(boughtPlayerOrders[k].GetFirst(), boughtPlayerOrders[k].GetCount()));
                                 }
                             }//Нужна проверка!
@@ -171,6 +200,8 @@ namespace Big_Capital.Capital_Logic
             orderBuy = newOrderBuy;
             orderSell = newOrderSell;
         }
+
+        //Ордера
         public static List<Order> GetPair(List<Order> list, Currency cur1, Currency cur2)
         {
             List<Order> pair = list.FindAll(
@@ -186,6 +217,7 @@ namespace Big_Capital.Capital_Logic
         }
         public void ShowOrders(Currency cur1, Currency cur2)
         {
+            String str = "";
             List<Order> sellPair = StockExchange.GetPair(orderSell, cur1, cur2);
             List<Order> buyPair = StockExchange.GetPair(orderBuy, cur1, cur2);
             buyPair.Reverse();
@@ -201,17 +233,34 @@ namespace Big_Capital.Capital_Logic
                 Console.WriteLine(buy.GetOrder());
             }
         }
+        public String ShowPlayerOrders()
+        {
+            String str = "";
+            List<Order> playerSell = orderSell.FindAll(x => x.IsPlayer == true);
+            List<Order> playerBuy = orderBuy.FindAll(x => x.IsPlayer == true);
+            Console.WriteLine("Ордеры на продажу:\n");
+            foreach(Order sell in playerSell)
+            {
+                str += "Цена\t\t" + sell.GetFirst().GetName() + "\t" + sell.GetSecond().GetName() + "\n" + sell.GetOrder();
+            }
+            Console.WriteLine("Ордеры на покупку:\n");
+            foreach (Order buy in playerBuy)
+            {
+                str += "Цена\t\t" + buy.GetFirst().GetName() + "\t" + buy.GetSecond().GetName() + "\n" + buy.GetOrder();
+            }
+            return str;
+        }
     }
     class Order
     {
         /*
-         * возможность покупки валюты по ордеру
-         * возможность продажи валюты по ордеру
-         * при покупке валюты по ордеру: если куплено меньшее количество, чем указано в ордере
+         * возможность покупки валюты по ордеру                                                 check!
+         * возможность продажи валюты по ордеру                                                 check!
+         * при покупке валюты по ордеру: если куплено меньшее количество, чем указано в ордере  check!
          * тогда вычесть из него количество купленой валюты
-         * кошельки для валют
-         * система рандомной покупки и продажи ордеров
-         * запоминание игрока, кошелька, последних котировок и ордеров
+         * кошельки для валют                                                                   check!
+         * система рандомной покупки и продажи ордеров                                          check!
+         * запоминание игрока, кошелька, последних котировок и ордеров                          not started yet
          */
         Double count;
         Currency cur1;
@@ -234,6 +283,19 @@ namespace Big_Capital.Capital_Logic
         {
             return new Order(count, cur1.Clone(), cur2.Clone());// {count = this.count, cur1 = this.cur1.Clone(), cur2 = this.cur2.Clone()};
         }
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Order)) return false;
+            else
+            {
+                Order order = (Order) obj;
+                return order.count == count && order.cur1.Equals(cur1) && order.cur2.Equals(cur2);
+            }
+        }
+        public override int GetHashCode()
+        {
+            return count.GetHashCode() + cur1.GetHashCode() + cur2.GetHashCode();//base.GetHashCode();
+        }
         public Boolean IsPlayer
         {
             get;
@@ -241,7 +303,7 @@ namespace Big_Capital.Capital_Logic
         }
         public String GetOrder()
         {
-            return String.Format("{0:F6}\t{1}\t{2:F6}", GetFirst().Cost / GetSecond().Cost, GetCount(), GetFirst().Cost / GetSecond().Cost * GetCount());
+            return String.Format("{0:F8}\t{1}\t{2:F8}", GetFirst().Cost / GetSecond().Cost, GetCount(), GetFirst().Cost / GetSecond().Cost * GetCount());
         }
         public Currency GetFirst()
         {

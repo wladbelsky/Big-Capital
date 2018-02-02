@@ -29,7 +29,16 @@ namespace Big_Capital.Capital_Logic
         {
             return new Currency {name = this.name, cost = this.cost};
         }
-
+        public override bool Equals(object obj)
+        {
+            if (! (obj is Currency)) return false;
+            else
+                return ((Currency) obj).name == name;
+        }
+        public override int GetHashCode()
+        {
+            return name.GetHashCode();//base.GetHashCode();
+        }
         public Double Cost
         {
             get { return cost; }
@@ -44,7 +53,7 @@ namespace Big_Capital.Capital_Logic
 
         public virtual string GetCur()
         {
-           return GetName() + "\t\t\t" + Cost;
+           return GetName() + "\t\t\t" + String.Format("{0:F8}", Cost);
         }
 
         public String GetName()
