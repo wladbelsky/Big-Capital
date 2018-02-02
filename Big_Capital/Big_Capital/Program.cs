@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;   //Debug class
+
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,9 +13,9 @@ namespace Big_Capital
         static void Main(string[] args)
         {
             PlayerInterface playerInterface = new PlayerInterface();
-            playerInterface.AddCurOwned(new CurOwned("name", 10, 100));
+            playerInterface.AddCurOwned(new CurOwned(playerInterface.GetStockExchange().GetQuotations()[0], 100));
             playerInterface.ShowMenu();
-            Debug.WriteLine("Завершено!");  //debug console
+            System.Diagnostics.Debug.WriteLine("Завершено!");  //debug console
         }
     }
 }

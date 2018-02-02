@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics; // Debug
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +21,6 @@ namespace Big_Capital.Capital_Logic
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
         StockExchange st = new StockExchange(startCur);
-        Boolean menuExit = false;
 
         public PlayerInterface() => ReadName();
         public PlayerInterface(String name, CurOwned own)
@@ -49,13 +47,19 @@ namespace Big_Capital.Capital_Logic
         //wallet interact
         public void AddCurOwned(CurOwned c)
         {
-            wallet.Add(c);
+            if(wallet.Exists(x => x.GetName() == c.GetName()))
+            {
+                wallet.Find(x => x.GetName() == c.GetName()).Owned += c.Owned;
+            }
+            else
+                wallet.Add(c);
         }
         public String GetCurOwned()
         {
-            String output = "";
+            String output = "\n";
             foreach(CurOwned cur in wallet)
             {
+                cur.Cost = st.GetQuotations().ToList().Find(x => x.GetName() == cur.GetName()).Cost;//Синхронизация цены со StockExchange
                 output += cur.GetCur();
                 output += "\n";
             }
@@ -63,13 +67,17 @@ namespace Big_Capital.Capital_Logic
                 output = "Пусто";
             return output;
         }
+        public StockExchange GetStockExchange()
+        {
+            return st;
+        }
 
         //player interact
         public void ShowMenu()
         {
             Menu.ShowMenu(new Menu[]
             {
-                new Menu("Начать игру", delegate(PlayerInterface sender){ sender.ShowGame(); }),
+                new Menu("Начать игру", delegate(PlayerInterface sender){ ShowGame(); }),
                 new Menu("Настройки", delegate(PlayerInterface sender){ Console.WriteLine("Settings?"); }),
                 new Menu("Выход", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
@@ -81,12 +89,21 @@ namespace Big_Capital.Capital_Logic
             {
                 new Menu("Показать котировки", 
                 delegate(PlayerInterface sender){
-                            sender.st.AddRandomOrders();
-                            sender.st.ShowOrders(startCur[0], startCur[5]);
-                            sender.st.RemoveRandomOrders();
+                    sender.st.ShowQuotations();
                 }),
-                new Menu("Купить/Продать", delegate(PlayerInterface sender){ Console.WriteLine("Не сделано(((("); }),
-                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine(GetCurOwned()); }),
+                new Menu("Купить/Продать", delegate(PlayerInterface sender){
+                    st.AddRandomOrders();
+                    //st.ShowOrders(startCur[0], startCur[5]);
+                    st.RemoveRandomOrders(this);
+                    st.Trade(this);
+                }),
+                new Menu("Обновить ордеры 0 7 (Debug)",
+                delegate(PlayerInterface sender){
+                    st.AddRandomOrders();
+                    st.ShowOrders(startCur[0], startCur[7]);
+                    st.RemoveRandomOrders(this);
+                }),
+                new Menu("Личный кабинет", delegate(PlayerInterface sender){ Console.WriteLine("Наименование:\t\tЦена:\tКоличество\n" + GetCurOwned()); }),
                 new Menu("Главное меню", delegate(PlayerInterface sender){ sender.MenuExit = true; })
             }, this);
         }
@@ -116,42 +133,12 @@ namespace Big_Capital.Capital_Logic
                 }
                 catch (Exception e)
                 {
-                    Debug.WriteLine(e.Message);
+                    System.Diagnostics.Debug.WriteLine(e.Message);
                     break;
                 }
             }
             sender.MenuExit = false;
         }
         
-    }
-
-    class CurOwned : Currency   //Валюта пользователя
-    {
-        Double count;
-
-        public CurOwned(Currency cur, Double own)
-        {
-            name = cur.GetName();
-            Cost = cur.Cost;
-        }
-        public CurOwned(String n, Double own , Double cost = 0) : base(n, cost)
-        {
-            count = own;
-        }
-        public override string GetCur()
-        {
-            return base.GetCur() + "\t" + Owned;
-        }
-        public Double Owned
-        {
-            get { return count; }
-            set
-            {
-                if (value > 0)
-                    count = value;
-                else
-                    count = 0;
-            }
-        }
     }
 }
