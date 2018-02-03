@@ -8,10 +8,10 @@ using System.IO;
 
 namespace Big_Capital.Capital_Logic
 {
-    class PlayerInterface
+    sealed class PlayerInterface
     {
-        String nickName;    
-        List<CurOwned> wallet = new List<CurOwned>();
+        private String nickName;
+        private List<CurOwned> wallet = new List<CurOwned>();
         public readonly static Currency[] startCur = {
             new Currency("USD", 1),
             new Currency("BTC", 10889.00000001),
@@ -22,30 +22,39 @@ namespace Big_Capital.Capital_Logic
             new Currency("BCC", 1609.63799991),
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
-        StockExchange st = new StockExchange(startCur);
-        TimerSender timer = new TimerSender(30000);
+        private static volatile PlayerInterface instance; //singleton
+        private static object syncRoot = new Object();
+        //private StockExchange StockExchange.Instance = new StockExchange(startCur); //remove, when ST is singleton
+        private TimerSender timer = new TimerSender(30000);
 
         //Конструкторы
-        public PlayerInterface(String name, CurOwned own)
+        public static PlayerInterface Instance
         {
-            wallet.Add(own);
-            this.nickName = name;
+            get
+            {
+                if(instance == null)
+                {
+                    lock (syncRoot)
+                    {
+                        if (instance == null)
+                            instance = new PlayerInterface();
+                    }
+                }
+                return instance;
+            }
+        }
+        public PlayerInterface()
+        {
+            StockExchange.Instance.SetQuotations(startCur);
+            this.nickName = "";
             timer.Elapsed += new ElapsedEventHandler(RandomTimerCallBack);
             timer.Sender = this;
             timer.Start();
         }
-        public PlayerInterface(String name, List<CurOwned> own)
-        {
-            nickName = name;
-            wallet = own;
-            timer.Elapsed += new ElapsedEventHandler(RandomTimerCallBack);
-            timer.Sender = this;
-            timer.Start();
-        }
-        public static String ReadName()
+        public void ReadName()
         {
             Console.Write("Введите имя игрока: ");
-            return Console.ReadLine();
+            nickName = Console.ReadLine();
         }
         public Boolean MenuExit
         {
@@ -55,10 +64,9 @@ namespace Big_Capital.Capital_Logic
         //Timer callback
         private static void RandomTimerCallBack(object sender, Object stateInfo)
         {
-            PlayerInterface player = (PlayerInterface)(sender as TimerSender).Sender;
-            player.st.AddRandomOrders();
-            player.st.RemoveRandomOrders(player);
-            System.Diagnostics.Debug.WriteLine("Таймер отработал");
+            StockExchange.Instance.AddRandomOrders();
+            StockExchange.Instance.RemoveRandomOrders();
+            System.Diagnostics.Debug.WriteLine("Таймер отработал"); //debug
         }
 
         //Взаимодействие с кошельком
@@ -71,12 +79,12 @@ namespace Big_Capital.Capital_Logic
             else
                 wallet.Add(c);
         }
-        public String GetCurOwned()
+        private String GetCurOwned()
         {
             String output = "\n";
             foreach(CurOwned cur in wallet)
             {
-                cur.Cost = st.GetQuotations().ToList().Find(x => x.GetName() == cur.GetName()).Cost;//Синхронизация цены со StockExchange
+                cur.Cost = StockExchange.Instance.GetQuotations().ToList().Find(x => x.GetName() == cur.GetName()).Cost;//Синхронизация цены со StockExchange
                 output += cur.GetCur();
                 output += "\n";
             }
@@ -98,20 +106,16 @@ namespace Big_Capital.Capital_Logic
         {
             return wallet.Exists(x => x.GetName() == cur.GetName() && x.Owned >= cur.Owned);
         }
-        public StockExchange GetStockExchange()     //получение экземпляра StockExchange
-        {
-            return st;
-        }
 
         //player interact
         public void ShowMenu()
         {
             Menu.ShowMenu(new Menu[]
             {
-                new Menu("Начать игру", delegate(PlayerInterface sender){ Console.Clear(); ShowGame(); }),
-                new Menu("Настройки", delegate(PlayerInterface sender){ Console.WriteLine("Settings?"); }),
-                new Menu("Выход", delegate(PlayerInterface sender){ sender.MenuExit = true; })
-            }, this);
+                new Menu("Начать игру", delegate(){ Console.Clear(); ShowGame(); }),
+                new Menu("Настройки", delegate(){ Console.WriteLine("Settings?"); }),
+                new Menu("Выход", delegate(){ PlayerInterface.Instance.MenuExit = true; })
+            });
         }
 
         private void ShowGame()
@@ -119,32 +123,32 @@ namespace Big_Capital.Capital_Logic
             Menu.ShowMenu(new Menu[]
             {
                 new Menu("Показать котировки", 
-                delegate(PlayerInterface sender){
+                delegate(){
                     Console.Clear();
-                    sender.st.ShowQuotations();
+                    StockExchange.Instance.ShowQuotations();
                 }),
-                new Menu("Купить/Продать", delegate(PlayerInterface sender){
+                new Menu("Купить/Продать", delegate(){
                     Console.Clear();
-                    st.AddRandomOrders();//убрать рандом
-                    //st.ShowOrders(startCur[0], startCur[5]);
-                    st.RemoveRandomOrders(this);
-                    st.Trade(this);
+                    StockExchange.Instance.AddRandomOrders();//убрать рандом
+                    //StockExchange.Instance.ShowOrders(startCur[0], startCur[5]);
+                    StockExchange.Instance.RemoveRandomOrders();
+                    StockExchange.Instance.Trade();
                 }),
                 new Menu("Обновить ордеры (Debug)",
-                delegate(PlayerInterface sender){
-                    st.AddRandomOrders();
-                    st.RemoveRandomOrders(this);
+                delegate(){
+                    StockExchange.Instance.AddRandomOrders();
+                    StockExchange.Instance.RemoveRandomOrders();
                     Console.WriteLine("Ордеры обновленны!");
                 }),
                 new Menu("Личный кабинет", 
-                delegate(PlayerInterface sender){
+                delegate(){
                     Console.Clear();
                     Console.WriteLine("Наименование:\t\tЦена:\tКоличество\n" + GetCurOwned());
                     Console.WriteLine("Ваши ордеры: ");
-                    Console.WriteLine(st.ShowPlayerOrders());
+                    Console.WriteLine(StockExchange.Instance.ShowPlayerOrders());
                 }),
-                new Menu("Главное меню", delegate(PlayerInterface sender){ Console.Clear(); sender.MenuExit = true; })
-            }, this);
+                new Menu("Главное меню", delegate(){ Console.Clear(); PlayerInterface.Instance.MenuExit = true; })
+            }, "Добро пожаловать, " + nickName + "!");
         }
 
         //Сохранение/Загрузка
@@ -160,23 +164,27 @@ namespace Big_Capital.Capital_Logic
     {
         private String menuName;
         private Delegate del;
-        public delegate void MenuDelegate(PlayerInterface sender);
+        public delegate void MenuDelegate();
         public Menu(String menuName, MenuDelegate menuDelegate)
         {
             this.menuName = menuName;
             del = menuDelegate;
         }
-        public static void ShowMenu(Menu[] menu, PlayerInterface sender)
+        public static void ShowMenu(Menu[] menu, String header = "")
         {
-            while (!sender.MenuExit)
+            while (!PlayerInterface.Instance.MenuExit)
             {
+                if(header != "")
+                {
+                    Console.WriteLine(header);
+                }
                 for (int i = 0; i < menu.Length; i++)
                 {
                     Console.WriteLine("\n" + (i + 1) + ")" + menu[i].menuName);
                 }
                 try
                 {
-                    menu[Convert.ToInt32(Console.ReadKey().KeyChar.ToString()) - 1].del.DynamicInvoke(sender);
+                    menu[Convert.ToInt32(Console.ReadKey().KeyChar.ToString()) - 1].del.DynamicInvoke();
                 }
                 catch (Exception e)
                 {
@@ -184,7 +192,7 @@ namespace Big_Capital.Capital_Logic
                     break;
                 }
             }
-            sender.MenuExit = false;
+            PlayerInterface.Instance.MenuExit = false;
         }
         
     }

@@ -12,9 +12,10 @@ namespace Big_Capital
     {
         static void Main(string[] args)
         {
-            PlayerInterface playerInterface = new PlayerInterface(PlayerInterface.ReadName(), new CurOwned(PlayerInterface.startCur[0], 100));
-            //playerInterface.AddCurOwned(new CurOwned(playerInterface.GetStockExchange().GetQuotations()[0], 100));
-            playerInterface.ShowMenu();
+            //PlayerInterface playerInterface = new PlayerInterface(PlayerInterface.ReadName(), new CurOwned(PlayerInterface.startCur[0], 100));
+            PlayerInterface.Instance.ReadName();
+            PlayerInterface.Instance.AddCurOwned(new CurOwned(StockExchange.Instance.GetQuotations()[0], 100));
+            PlayerInterface.Instance.ShowMenu();
             //PlayerInterface.Save("capital.sav", playerInterface);
             System.Diagnostics.Debug.WriteLine("Завершено!");  //debug console
         }
