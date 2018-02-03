@@ -129,9 +129,6 @@ namespace Big_Capital.Capital_Logic
                 }),
                 new Menu("Купить/Продать", delegate(){
                     Console.Clear();
-                    StockExchange.Instance.AddRandomOrders();//убрать рандом
-                    //StockExchange.Instance.ShowOrders(startCur[0], startCur[5]);
-                    StockExchange.Instance.RemoveRandomOrders();
                     StockExchange.Instance.Trade();
                 }),
                 new Menu("Обновить ордеры (Debug)",
@@ -152,11 +149,11 @@ namespace Big_Capital.Capital_Logic
         }
 
         //Сохранение/Загрузка
-        //public static void Save(String filePath, PlayerInterface playerInterface)
+        //public static void Save(String filePath)
         //{
         //    FileStream outFile = File.Create(filePath);
-        //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(playerInterface.GetType());
-        //    serializer.Serialize(outFile, playerInterface);
+        //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(PlayerInterface.Instance.GetType());
+        //    serializer.Serialize(outFile, PlayerInterface.Instance);
         //}
     }
 

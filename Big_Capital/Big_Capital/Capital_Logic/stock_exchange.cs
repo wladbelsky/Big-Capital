@@ -71,14 +71,16 @@ namespace Big_Capital.Capital_Logic
             {
                 new Menu("Купить", 
                 delegate(){
-                    Console.Write("Выберите желаемое количество для покупки: ");
+                    Console.Write("\nВыберите желаемое количество для покупки: ");
                     Double count = Convert.ToDouble(Console.ReadLine());
                     Order order = new Order(count, quotations[one], quotations[two], true);
-                    if(PlayerInterface.Instance.IsCurOwned(new CurOwned(quotations[two], count * quotations[one].Cost / quotations[two].Cost)))
+                    if(PlayerInterface.Instance.IsCurOwned(new CurOwned(quotations[two], count * quotations[one].Cost / quotations[two].Cost)) && count > 0)
                     {
                         AddBuyOrder(order);
                         Console.WriteLine("Ордер успешно выставлен на покупку!");
                     }
+                    else if(count == 0)
+                        Console.WriteLine("Введено нулевое значение, ордер отменен");
                     else
                         Console.WriteLine("Недостаточно средств!");
 
@@ -86,14 +88,16 @@ namespace Big_Capital.Capital_Logic
                 }),
                 new Menu("Продать", 
                 delegate(){
-                    Console.WriteLine("Введите количество для продажи: ");
+                    Console.WriteLine("\nВведите количество для продажи: ");
                     Double count = Convert.ToDouble(Console.ReadLine());
                     Order order = new Order(count, quotations[one], quotations[two], true);
-                    if(PlayerInterface.Instance.IsCurOwned(new CurOwned(quotations[one], count)))
+                    if(PlayerInterface.Instance.IsCurOwned(new CurOwned(quotations[one], count)) && count > 0)
                     {
                         AddSellOrder(order);//первую за вторую!!! xD
                         Console.WriteLine("Ордер успешно выставлен на продажу!");
                     }
+                    else if(count == 0)
+                        Console.WriteLine("Введено нулевое значение, ордер отменен");
                     else
                         Console.WriteLine("Недостаточно средств!");
                     PlayerInterface.Instance.MenuExit = true;
@@ -284,7 +288,7 @@ namespace Big_Capital.Capital_Logic
          * тогда вычесть из него количество купленой валюты
          * кошельки для валют                                                                   check!
          * система рандомной покупки и продажи ордеров                                          check!
-         * запоминание игрока, кошелька, последних котировок и ордеров                          not started yet
+         * запоминание игрока, кошелька, последних котировок и ордеров                          in progress!
          */
         Double count;
         Currency cur1;
@@ -306,7 +310,7 @@ namespace Big_Capital.Capital_Logic
         }
         public Order Clone()
         {
-            return new Order(count, cur1.Clone(), cur2.Clone());// {count = this.count, cur1 = this.cur1.Clone(), cur2 = this.cur2.Clone()};
+            return new Order(count, cur1.Clone(), cur2.Clone());
         }
         public override bool Equals(object obj)
         {
@@ -319,7 +323,7 @@ namespace Big_Capital.Capital_Logic
         }
         public override int GetHashCode()
         {
-            return count.GetHashCode() + cur1.GetHashCode() + cur2.GetHashCode();//base.GetHashCode();
+            return count.GetHashCode() + cur1.GetHashCode() + cur2.GetHashCode();
         }
         public Boolean IsPlayer
         {

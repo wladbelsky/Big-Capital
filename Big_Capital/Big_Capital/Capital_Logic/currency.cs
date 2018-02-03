@@ -37,7 +37,7 @@ namespace Big_Capital.Capital_Logic
         }
         public override int GetHashCode()
         {
-            return name.GetHashCode();//base.GetHashCode();
+            return name.GetHashCode();
         }
         public Double Cost
         {
