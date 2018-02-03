@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
+using System.Timers;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Big_Capital.Capital_Logic
 {
@@ -11,7 +12,7 @@ namespace Big_Capital.Capital_Logic
     {
         String nickName;    
         List<CurOwned> wallet = new List<CurOwned>();
-        readonly static Currency[] startCur = {
+        public readonly static Currency[] startCur = {
             new Currency("USD", 1),
             new Currency("BTC", 10889.00000001),
             new Currency("ETH", 1183.32000003),
@@ -22,38 +23,42 @@ namespace Big_Capital.Capital_Logic
             new Currency("DOGE", 0.00639700)
         };//стартовая валюта и её стоимость
         StockExchange st = new StockExchange(startCur);
-        Timer timer = new Timer(RandomTimerCallBack, new AutoResetEvent(false), 0, 60 * 1000);
-
-        //Timer callback, перенести позже!
-        private static void RandomTimerCallBack(Object stateInfo)
-        {
-            //PlayerInterface pi = stateInfo as PlayerInterface;
-            //pi.st.AddRandomOrders();
-            //pi.st.RemoveRandomOrders(pi);
-            System.Diagnostics.Debug.WriteLine("Таймер отработал");
-        }
+        TimerSender timer = new TimerSender(30000);
 
         //Конструкторы
-        public PlayerInterface() => ReadName();
         public PlayerInterface(String name, CurOwned own)
         {
             wallet.Add(own);
             this.nickName = name;
+            timer.Elapsed += new ElapsedEventHandler(RandomTimerCallBack);
+            timer.Sender = this;
+            timer.Start();
         }
         public PlayerInterface(String name, List<CurOwned> own)
         {
             nickName = name;
             wallet = own;
+            timer.Elapsed += new ElapsedEventHandler(RandomTimerCallBack);
+            timer.Sender = this;
+            timer.Start();
         }
-        public void ReadName()
+        public static String ReadName()
         {
             Console.Write("Введите имя игрока: ");
-            nickName = Console.ReadLine();
+            return Console.ReadLine();
         }
         public Boolean MenuExit
         {
             get;
             set;
+        }
+        //Timer callback
+        private static void RandomTimerCallBack(object sender, Object stateInfo)
+        {
+            PlayerInterface player = (PlayerInterface)(sender as TimerSender).Sender;
+            player.st.AddRandomOrders();
+            player.st.RemoveRandomOrders(player);
+            System.Diagnostics.Debug.WriteLine("Таймер отработал");
         }
 
         //Взаимодействие с кошельком
@@ -141,6 +146,14 @@ namespace Big_Capital.Capital_Logic
                 new Menu("Главное меню", delegate(PlayerInterface sender){ Console.Clear(); sender.MenuExit = true; })
             }, this);
         }
+
+        //Сохранение/Загрузка
+        //public static void Save(String filePath, PlayerInterface playerInterface)
+        //{
+        //    FileStream outFile = File.Create(filePath);
+        //    System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer(playerInterface.GetType());
+        //    serializer.Serialize(outFile, playerInterface);
+        //}
     }
 
     class Menu
@@ -174,5 +187,15 @@ namespace Big_Capital.Capital_Logic
             sender.MenuExit = false;
         }
         
+    }
+
+    class TimerSender : Timer
+    {
+        public TimerSender(double interval) : base(interval) { }
+        public object Sender
+        {
+            get;
+            set;
+        }
     }
 }

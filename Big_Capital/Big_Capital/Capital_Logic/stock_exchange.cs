@@ -172,7 +172,7 @@ namespace Big_Capital.Capital_Logic
                                 {
                                     System.Diagnostics.Debug.WriteLine(soldPlayerOrders[k].GetOrder());//debug
                                     Console.WriteLine("Ваш ордер куплен {0}/{1}", soldPlayerOrders[k].GetFirst().GetName(), soldPlayerOrders[k].GetSecond().GetName());
-                                    sender.RemoveCurOwned(new CurOwned(soldPlayerOrders[k].GetFirst(), soldPlayerOrders[k].GetCount()));
+                                    //sender.RemoveCurOwned(new CurOwned(soldPlayerOrders[k].GetFirst(), soldPlayerOrders[k].GetCount()));
                                     sender.AddCurOwned(new CurOwned(soldPlayerOrders[k].GetSecond(), soldPlayerOrders[k].GetFirst().Cost / soldPlayerOrders[k].GetSecond().Cost * soldPlayerOrders[k].GetCount()));
                                     sellPair.Remove(soldPlayerOrders[k]);
                                 }
