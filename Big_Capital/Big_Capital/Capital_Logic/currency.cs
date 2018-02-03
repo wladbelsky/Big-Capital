@@ -9,7 +9,7 @@ namespace Big_Capital.Capital_Logic
     class Currency
     {
         protected String name;
-        Double cost;
+        private Double cost;
         public Currency()
         {
             name = "";
@@ -65,7 +65,7 @@ namespace Big_Capital.Capital_Logic
 
     class CurOwned : Currency   //Валюта пользователя
     {
-        Double count;
+        private Double count;
 
         public CurOwned(Currency cur, Double own)
         {
